@@ -2,7 +2,7 @@
 
 #--------------------推送设置-----------------------
 
-WechatPush= False
+WechatPush= True
 APPID = ""
 APPSECRET = ""
 
