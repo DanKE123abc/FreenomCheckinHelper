@@ -46,7 +46,7 @@ pip install requests -t.
 
 ##### 2.配置信息
 
-​    在./config.json里修改用户信息
+​    在./config.json里修改用户信息，填入你的邮箱和密码
 
 ​    支持多用户
 
