@@ -5,10 +5,10 @@ import requests
 import wechatpush
 import re
 
-#时间：2023/1/8
-#作者：蛋壳
-#Another: DanKe
-#备注：Freenom自动续费
+# 时间：2023/1/8
+# 作者：蛋壳
+# Another: DanKe
+# 备注：Freenom自动续费
 
 Login_url = setting.LoginUrl
 Domain_Status_Url = setting.DomainStatusUrl
@@ -26,14 +26,17 @@ sess.headers.update({
     'referer': 'https://my.freenom.com/clientarea.php'
 })
 
-def sign(username,password):#续费
+
+def sign(username, password):  # 续费
     try:  # 异常捕捉
-        r = sess.post(Login_url, data={'username': username, 'password': password})
+        r = sess.post(Login_url, data={
+                      'username': username, 'password': password})
         if r.status_code != 200:
             print('Can not login. Pls check network.')
             return False
         # 查看域名状态
-        sess.headers.update({'referer': 'https://my.freenom.com/clientarea.php'})
+        sess.headers.update(
+            {'referer': 'https://my.freenom.com/clientarea.php'})
         r = sess.get(Domain_Status_Url)
     except:
         return False
@@ -64,12 +67,12 @@ def sign(username,password):#续费
             })
             try:
                 r = sess.post(Renew_Domain_Url,
-                          data={
-                              'token': token,
-                              'renewalid': renewal_id,
-                              f'renewalperiod[{renewal_id}]': '12M',
-                              'paymentmethod': 'credit'
-                          })
+                              data={
+                                  'token': token,
+                                  'renewalid': renewal_id,
+                                  f'renewalperiod[{renewal_id}]': '12M',
+                                  'paymentmethod': 'credit'
+                              })
             except:
                 print('Network failed.')
                 renew_domains_failed.append(domain)
@@ -77,7 +80,7 @@ def sign(username,password):#续费
             if r.text.find('Order Confirmation') != -1:
                 renew_domains_succeed.append(domain)
             else:
-                    renew_domains_failed.append(domain)
+                renew_domains_failed.append(domain)
     print(domains_list, renew_domains_succeed, renew_domains_failed)
     result = dict()
     result["list"] = domains_list
@@ -85,9 +88,10 @@ def sign(username,password):#续费
     result["failed_list"] = renew_domains_failed
     return result
 
-def writeMsg(_username,_password):#编辑信息
-    result = sign(_username,_password)
-    if result==False:
+
+def writeMsg(_username, _password):  # 编辑信息
+    result = sign(_username, _password)
+    if result == False:
         sign_result = "失败"
         list = ""
         s_list = ""
@@ -97,7 +101,7 @@ def writeMsg(_username,_password):#编辑信息
         list = result["list"]
         s_list = result["succeed_list"]
         f_list = result["failed_list"]
-    if len(s_list)>0 or len(f_list)>0:
+    if len(s_list) > 0 or len(f_list) > 0:
         message = '''⏰当前时间：{} 
 尝试为您自动续费Freenom的所有免费域名
 ####################
@@ -112,13 +116,13 @@ def writeMsg(_username,_password):#编辑信息
 祝您过上美好的一天！
 
          ——by DanKe'''.format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time() + 28800)),
-                        sign_result,
-                        len(list),
-                        len(s_list),
-                        len(f_list),
-                        list,
-                        s_list,
-                        f_list)
+                              sign_result,
+                              len(list),
+                              len(s_list),
+                              len(f_list),
+                              list,
+                              s_list,
+                              f_list)
     else:
         message = '''⏰当前时间：{} 
 尝试为您自动续费Freenom的所有免费域名
@@ -132,15 +136,14 @@ def writeMsg(_username,_password):#编辑信息
 祝您过上美好的一天！
 
          ——by DanKe'''.format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time() + 28800)),
-                        sign_result,
-                        len(list),
-                        len(s_list),
-                        len(f_list))
+                              sign_result,
+                              len(list),
+                              len(s_list),
+                              len(f_list))
     return message
 
 
-
-def handler(event, context):#这里是阿里云的入口，腾讯云要改成main_handler
+def handler(event, context):  # 阿里云，华为云入口
     config_path = "config.json"
     with open(config_path, "r") as f:
         row_data = json.load(f)
@@ -149,18 +152,23 @@ def handler(event, context):#这里是阿里云的入口，腾讯云要改成mai
         password = user['password']
         pushid = user['pushid']
         try:
-            msg = writeMsg(username,password)
+            msg = writeMsg(username, password)
         except:
             msg = '续费失败，未知错误'
             msg_en = 'Renewal failed, unknown error'
             print(msg)
             print(msg_en)
 
-        if setting.WechatPush == True :
+        if setting.WechatPush == True:
             wechatpush.push_text(pushid, msg)
-        elif setting.WechatPush == False :
+        elif setting.WechatPush == False:
             print("微信推送功能未启用")
             print('WeChatPush is not enabled')
 
-if __name__ == '__main__':
+
+def handler(event, context):  # 腾讯云入口
+    handler(event, context)
+
+
+if __name__ == '__main__':  # 直接运行入口
     handler(None, None)
